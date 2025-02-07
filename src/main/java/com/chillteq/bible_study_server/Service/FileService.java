@@ -5,11 +5,11 @@ import com.chillteq.bible_study_server.model.Media;
 import com.chillteq.bible_study_server.model.Playlist;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,15 +33,17 @@ public class FileService {
                 playlist.setName(folder.getName());
                 List<Media> mediaList = new ArrayList<>();
                 for(File mediaFile: files) {
-                    logger.info("Fould file " + mediaFile.getName());
+                    logger.info("Fould file {}", mediaFile.getName());
                     Media media = new Media();
                     media.setName(mediaFile.getName());
                     mediaList.add(media);
                 }
+                Collections.sort(mediaList);
                 playlist.setMedia(mediaList);
                 list.add(playlist);
             }
         }
+        Collections.sort(list);
         return list;
     }
 
@@ -60,7 +62,7 @@ public class FileService {
                 }
             }
         }
-        throw new FileNotFoundException("Request playlist " + playlistName + " and media file " + mediaName +"  was not found");
+        throw new FileNotFoundException("Requested playlist " + playlistName + " and media file " + mediaName +"  was not found");
     }
 
     public InputStream getFileInputStream(String dir) throws FileNotFoundException {
