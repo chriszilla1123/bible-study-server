@@ -1,7 +1,9 @@
 package com.chillteq.bible_study_server.controller;
 
 import com.chillteq.bible_study_server.Service.FileService;
+import com.chillteq.bible_study_server.Service.ScheduleService;
 import com.chillteq.bible_study_server.model.Playlist;
+import com.chillteq.bible_study_server.model.Schedule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
@@ -14,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -24,13 +25,16 @@ import java.util.List;
 public class BibleStudyController {
 
     @Autowired
-    FileService fileService = new FileService();
+    FileService fileService;
+
+    @Autowired
+    ScheduleService scheduleService;
 
     /*
      * Gets the metadata for all media currently configured
      */
     @GetMapping(value="media")
-    public ResponseEntity<List<Playlist>> getMediaMetadata() throws FileNotFoundException {
+    public ResponseEntity<List<Playlist>> getMediaMetadata() throws IOException {
         return ResponseEntity.ok().body(fileService.getMediaMetadata());
     }
 
@@ -39,11 +43,6 @@ public class BibleStudyController {
                                                                                  @RequestParam(name="mediaName") String mediaName) throws IOException {
 
         File mediaFile = fileService.getMediaByPlaylistNameAndMediaName(playlistName, mediaName);
-//        HttpHeaders responseHeaders = new HttpHeaders();
-//        responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + name);
-//        responseHeaders.add(HttpHeaders.CONTENT_TYPE, "audio/mpeg");
-//        return ResponseEntity.ok().body(fileService.getMediaByPlaylistNameAndMediaName(playlistName, mediaName));
-
         if (!mediaFile.exists()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -70,5 +69,10 @@ public class BibleStudyController {
             return new ResponseEntity<>(new FileSystemResource(mediaFile), responseHeaders, HttpStatus.OK);
 
         }
+    }
+
+    @GetMapping(value="schedule")
+    public ResponseEntity<List<Schedule>> getSchedule() {
+        return ResponseEntity.ok().body(scheduleService.getSchedule());
     }
 }
