@@ -44,10 +44,10 @@ public class WebConfig {
 //        return new InMemoryUserDetailsManager(user);
 //    }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.cors().and().csrf().disable()
-                .httpBasic();
-        return http.build();
-    }
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//        http.cors().and().csrf().disable()
+//                .httpBasic();
+//        return http.build();
+//    }
 }
