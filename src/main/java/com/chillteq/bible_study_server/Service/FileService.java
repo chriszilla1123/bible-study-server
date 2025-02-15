@@ -36,16 +36,22 @@ public class FileService {
                 playlist.setName(folder.getName());
                 List<Media> mediaList = new ArrayList<>();
                 for(File mediaFile: files) {
-                    logger.info("Fould file '{}'", mediaFile.getName());
-                    Media media = new Media();
-                    media.setName(mediaFile.getName());
-                    media.setPlaylistName(playlist.getName());
-                    media.setDuration(getMediaDuration(mediaFile));
-                    mediaList.add(media);
+                    try {
+                        logger.info("Fould file '{}'", mediaFile.getName());
+                        Media media = new Media();
+                        media.setName(mediaFile.getName());
+                        media.setPlaylistName(playlist.getName());
+                        media.setDuration(getMediaDuration(mediaFile));
+                        mediaList.add(media);
+                    } catch (Exception e) {
+                        logger.error("Error processing file {} in playlist {} - will be skipped. message: {}", mediaFile.getName(), playlist.getName(), e.getMessage());
+                    }
                 }
-                Collections.sort(mediaList);
-                playlist.setMedia(mediaList);
-                list.add(playlist);
+                if (!mediaList.isEmpty()) {
+                    Collections.sort(mediaList);
+                    playlist.setMedia(mediaList);
+                    list.add(playlist);
+                }
             }
         }
         Collections.sort(list);
