@@ -27,7 +27,7 @@ public class ScheduleService {
 
     private BlockingQueue<Schedule> schedule = new LinkedBlockingQueue<>();
 
-    @Scheduled(initialDelay = 5000, fixedRate = 300000)
+    @Scheduled(initialDelay = 10000, fixedRate = 300000)
     private void init() {
         try {
             setMediaList();

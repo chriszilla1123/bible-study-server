@@ -7,6 +7,7 @@ import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -22,10 +23,20 @@ public class FileService {
 
     private final File baseDirectory = new File(Constants.baseVideoDirectory);
 
+    List<Playlist> playlists = new ArrayList<>();
+
     /*
-     * Returns a list of all available files, in their playlists.
+     * Returns the cashed playlists list.
      */
     public List<Playlist> getMediaMetadata() {
+        return playlists;
+    }
+
+    /*
+     * Scans the baseDirectory to return a list of all available files, in their playlists.
+     */
+    @Scheduled(initialDelay = 3000, fixedRate = 60000)
+    public List<Playlist> getPlaylistsFromDisk() {
         logger.info("Using base directory {}", baseDirectory.getName());
         List<Playlist> list = new ArrayList<>();
         for(File folder: Objects.requireNonNull(baseDirectory.listFiles(File::isDirectory))) {
@@ -55,6 +66,7 @@ public class FileService {
             }
         }
         Collections.sort(list);
+        this.playlists = list;
         return list;
     }
 
