@@ -3,6 +3,7 @@ package com.chillteq.bible_study_server.Service;
 import com.chillteq.bible_study_server.constant.Constants;
 import com.chillteq.bible_study_server.model.Media;
 import com.chillteq.bible_study_server.model.Playlist;
+import com.mpatric.mp3agic.Mp3File;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.slf4j.Logger;
@@ -93,13 +94,22 @@ public class FileService {
 
     public Duration getMediaDuration(File mediaFile) {
         try {
+            //JAudioTagger implementation
             AudioFile audioMetadata = AudioFileIO.read(mediaFile);
 //            System.out.println("Audio Metadata "+ audioMetadata.displayStructureAsPlainText());
 //            System.out.println(audioMetadata.getAudioHeader().getTrackLength());
 //            System.out.println(audioMetadata.getAudioHeader().getBitRate());
             return Duration.ofSeconds(audioMetadata.getAudioHeader().getTrackLength());
         } catch (Exception e) {
-            throw new RuntimeException("Error while getting metadata for audio file. Error " +  e.getLocalizedMessage());
+            try {
+                //Mp3agic implementation
+                Mp3File file = new Mp3File(mediaFile);
+                return Duration.ofSeconds(file.getLengthInSeconds());
+            } catch (Exception e2) {
+                logger.error("Error while getting metadata for audio file. Error 1: {}", e.getLocalizedMessage());
+                logger.error("Error while getting metadata for audio file. Error 2: {}", e2.getLocalizedMessage());
+                throw new RuntimeException("Error while getting metadata for audio file. Error: " +  e.getLocalizedMessage());
+            }
         }
     }
 }
