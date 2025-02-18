@@ -71,7 +71,7 @@ FROM eclipse-temurin:23-jre-noble AS final
 
 # Install Python and pip
 RUN apt-get update && \
-    apt-get install -y pipx ffmpeg
+    apt-get install -y pipx ffmpeg vlc
 
 # Install the PyPI package
 RUN pipx install yt-dlp

@@ -3,14 +3,14 @@ package com.chillteq.bible_study_server.Service;
 import com.chillteq.bible_study_server.constant.Constants;
 import com.chillteq.bible_study_server.model.Media;
 import com.chillteq.bible_study_server.model.Playlist;
-import com.github.kokorin.jaffree.ffprobe.FFprobe;
-import com.github.kokorin.jaffree.ffprobe.Format;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import uk.co.caprica.vlcj.factory.MediaPlayerFactory;
+import uk.co.caprica.vlcj.player.base.MediaPlayer;
 
 import java.io.*;
 import java.time.Duration;
@@ -50,7 +50,7 @@ public class FileService {
                 List<Media> mediaList = new ArrayList<>();
                 for(File mediaFile: files) {
                     try {
-                        logger.info("Fould file '{}'", mediaFile.getName());
+                        logger.info("Found file '{}'", mediaFile.getName());
                         Media media = new Media();
                         media.setName(mediaFile.getName());
                         media.setPlaylistName(playlist.getName());
@@ -103,13 +103,25 @@ public class FileService {
             return Duration.ofSeconds(audioMetadata.getAudioHeader().getTrackLength());
         } catch (Exception e) {
             try {
-                //Jaffree implementation
-                Format format = FFprobe.atPath()
-                        .setInput(mediaFile.toPath())
-                        .execute()
-                        .getFormat();
+                //VLCJ implementation
+                MediaPlayerFactory factory = new MediaPlayerFactory();
+                MediaPlayer mediaPlayer = factory.mediaPlayers().newMediaPlayer();
 
-                return Duration.ofSeconds(format.getDuration().longValue());
+                mediaPlayer.media().startPaused(mediaFile.getAbsolutePath());
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException threadError) {
+                    Thread.currentThread().interrupt();
+                }
+
+                long durationMs = mediaPlayer.status().length();
+                mediaPlayer.release();
+                if (durationMs > 0) {
+                    return Duration.ofMillis(durationMs);
+                } else {
+                    throw new Exception();
+                }
+
             } catch (Exception e2) {
                 logger.error("Error while getting metadata for audio file. Error 1: {}", e.getLocalizedMessage());
                 logger.error("Error while getting metadata for audio file. Error 2: {}", e2.getLocalizedMessage());

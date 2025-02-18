@@ -51,12 +51,13 @@
 			<version>3.0.1</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/com.github.kokorin.jaffree/jaffree -->
+		<!-- https://mvnrepository.com/artifact/uk.co.caprica/vlcj -->
 		<dependency>
-			<groupId>com.github.kokorin.jaffree</groupId>
-			<artifactId>jaffree</artifactId>
-			<version>2024.08.29</version>
+			<groupId>uk.co.caprica</groupId>
+			<artifactId>vlcj</artifactId>
+			<version>5.0.0-M4</version>
 		</dependency>
+
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
