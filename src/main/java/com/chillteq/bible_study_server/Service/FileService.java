@@ -3,8 +3,8 @@ package com.chillteq.bible_study_server.Service;
 import com.chillteq.bible_study_server.constant.Constants;
 import com.chillteq.bible_study_server.model.Media;
 import com.chillteq.bible_study_server.model.Playlist;
-import org.apache.tika.Tika;
-import org.apache.tika.metadata.Metadata;
+import com.github.kokorin.jaffree.ffprobe.FFprobe;
+import com.github.kokorin.jaffree.ffprobe.Format;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.slf4j.Logger;
@@ -103,14 +103,13 @@ public class FileService {
             return Duration.ofSeconds(audioMetadata.getAudioHeader().getTrackLength());
         } catch (Exception e) {
             try {
-                //Apache Tika implementation
-                Tika tika = new Tika();
-                Metadata metadata = new Metadata();
-                tika.parse(mediaFile, metadata);
-                String durationString = metadata.get("xmpDM:duration");
-                logger.info("Using Apache Tika fallback for parsing duration of {}", mediaFile.getName());
-                int seconds = Integer.parseInt(durationString) / 1000;
-                return Duration.ofSeconds(seconds);
+                //Jaffree implementation
+                Format format = FFprobe.atPath() // Ensure FFmpeg is in your system PATH
+                        .setInput("path/to/your/audio.mp3")
+                        .execute()
+                        .getFormat();
+
+                return Duration.ofSeconds(format.getDuration().longValue());
             } catch (Exception e2) {
                 logger.error("Error while getting metadata for audio file. Error 1: {}", e.getLocalizedMessage());
                 logger.error("Error while getting metadata for audio file. Error 2: {}", e2.getLocalizedMessage());
