@@ -104,8 +104,8 @@ public class FileService {
         } catch (Exception e) {
             try {
                 //Jaffree implementation
-                Format format = FFprobe.atPath() // Ensure FFmpeg is in your system PATH
-                        .setInput("path/to/your/audio.mp3")
+                Format format = FFprobe.atPath()
+                        .setInput(mediaFile.toPath())
                         .execute()
                         .getFormat();
 
