@@ -104,23 +104,25 @@ public class FileService {
         } catch (Exception e) {
             try {
                 //VLCJ implementation
-                MediaPlayerFactory factory = new MediaPlayerFactory();
-                MediaPlayer mediaPlayer = factory.mediaPlayers().newMediaPlayer();
-
-                mediaPlayer.media().startPaused(mediaFile.getAbsolutePath());
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException threadError) {
-                    Thread.currentThread().interrupt();
-                }
-
-                long durationMs = mediaPlayer.status().length();
-                mediaPlayer.release();
-                if (durationMs > 0) {
-                    return Duration.ofMillis(durationMs);
-                } else {
-                    throw new Exception();
-                }
+                logger.info("fallback");
+                throw new Exception();
+//                MediaPlayerFactory factory = new MediaPlayerFactory();
+//                MediaPlayer mediaPlayer = factory.mediaPlayers().newMediaPlayer();
+//
+//                mediaPlayer.media().startPaused(mediaFile.getAbsolutePath());
+//                try {
+//                    Thread.sleep(1000);
+//                } catch (InterruptedException threadError) {
+//                    Thread.currentThread().interrupt();
+//                }
+//
+//                long durationMs = mediaPlayer.status().length();
+//                mediaPlayer.release();
+//                if (durationMs > 0) {
+//                    return Duration.ofMillis(durationMs);
+//                } else {
+//                    throw new Exception();
+//                }
 
             } catch (Exception e2) {
                 logger.error("Error while getting metadata for audio file. Error 1: {}", e.getLocalizedMessage());
