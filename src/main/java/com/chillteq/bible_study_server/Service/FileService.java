@@ -3,7 +3,8 @@ package com.chillteq.bible_study_server.Service;
 import com.chillteq.bible_study_server.constant.Constants;
 import com.chillteq.bible_study_server.model.Media;
 import com.chillteq.bible_study_server.model.Playlist;
-import com.mpatric.mp3agic.Mp3File;
+import org.apache.tika.Tika;
+import org.apache.tika.metadata.Metadata;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.slf4j.Logger;
@@ -102,9 +103,14 @@ public class FileService {
             return Duration.ofSeconds(audioMetadata.getAudioHeader().getTrackLength());
         } catch (Exception e) {
             try {
-                //Mp3agic implementation
-                Mp3File file = new Mp3File(mediaFile);
-                return Duration.ofSeconds(file.getLengthInSeconds());
+                //Apache Tika implementation
+                Tika tika = new Tika();
+                Metadata metadata = new Metadata();
+                tika.parse(mediaFile, metadata);
+                String durationString = metadata.get("xmpDM:duration");
+                logger.info("Using Apache Tika fallback for parsing duration of {}", mediaFile.getName());
+                int seconds = Integer.parseInt(durationString) / 1000;
+                return Duration.ofSeconds(seconds);
             } catch (Exception e2) {
                 logger.error("Error while getting metadata for audio file. Error 1: {}", e.getLocalizedMessage());
                 logger.error("Error while getting metadata for audio file. Error 2: {}", e2.getLocalizedMessage());
