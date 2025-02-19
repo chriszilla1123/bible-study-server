@@ -3,14 +3,14 @@ package com.chillteq.bible_study_server.Service;
 import com.chillteq.bible_study_server.constant.Constants;
 import com.chillteq.bible_study_server.model.Media;
 import com.chillteq.bible_study_server.model.Playlist;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import uk.co.caprica.vlcj.factory.MediaPlayerFactory;
-import uk.co.caprica.vlcj.player.base.MediaPlayer;
 
 import java.io.*;
 import java.time.Duration;
@@ -103,30 +103,36 @@ public class FileService {
             return Duration.ofSeconds(audioMetadata.getAudioHeader().getTrackLength());
         } catch (Exception e) {
             try {
-                //VLCJ implementation
-                logger.info("fallback");
-                throw new Exception();
-//                MediaPlayerFactory factory = new MediaPlayerFactory();
-//                MediaPlayer mediaPlayer = factory.mediaPlayers().newMediaPlayer();
-//
-//                mediaPlayer.media().startPaused(mediaFile.getAbsolutePath());
-//                try {
-//                    Thread.sleep(1000);
-//                } catch (InterruptedException threadError) {
-//                    Thread.currentThread().interrupt();
-//                }
-//
-//                long durationMs = mediaPlayer.status().length();
-//                mediaPlayer.release();
-//                if (durationMs > 0) {
-//                    return Duration.ofMillis(durationMs);
-//                } else {
-//                    throw new Exception();
-//                }
+                //ffprobe implementation
+                ProcessBuilder pb = new ProcessBuilder(
+                        "ffprobe",
+                        "-v", "quiet",
+                        "-print_format", "json",
+                        "-show_format",
+                        "-show_streams",
+                        mediaFile.getAbsolutePath()
+                );
+                Process process = pb.start();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                StringBuilder jsonString = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    jsonString.append(line);
+                }
+                process.waitFor();
+
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode root = mapper.readTree(jsonString.toString());
+                JsonNode format = root.path("format");
+                String durationStr = format.get("duration").asText();
+                double durationInSeconds = Double.parseDouble(durationStr);
+
+                logger.info("getMediaDuration - {} duration found to be {} seconds using ffprobe fallback", mediaFile.getName(), durationInSeconds);
+                return Duration.ofSeconds(Math.round(durationInSeconds));
 
             } catch (Exception e2) {
-                logger.error("Error while getting metadata for audio file. Error 1: {}", e.getLocalizedMessage());
-                logger.error("Error while getting metadata for audio file. Error 2: {}", e2.getLocalizedMessage());
+                logger.error("getMediaDuration - Error while getting metadata for audio file. Error 1: {}", e.getLocalizedMessage());
+                logger.error("getMediaDuration - Error while getting metadata for audio file using fallback. Error 2: {}", e2.getLocalizedMessage());
                 throw new RuntimeException("Error while getting metadata for audio file. Error: " +  e.getLocalizedMessage());
             }
         }
